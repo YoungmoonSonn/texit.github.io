@@ -8,7 +8,7 @@
 			var visitTime = (new Date()).getTime();
 
 			var isAndroid = /android/i.test(navigator.userAgent);
-			var isiOS = /iPad/iPhone/iPod/.test(navigator.userAgent) && !window.MSStream;
+			var isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 			if(isAndroid) {
 				location.href = "https://play.google.com/store/apps/details?id=com.example.texit";
 			} else if (isiOS) {
