@@ -10,30 +10,33 @@
       var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       var isAndroid = /Android/i.test(navigator.userAgent);
       var appOpened = false; // 앱 실행 여부
-      var startTime = Date.now(); // 시작 시간 저장
+      var timeout;
+
+      // 숨겨진 iframe 생성
+      var iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
 
       // 앱 실행 시도
-      if (isIOS) {
-        window.location = 'texit://post?uid=' + getParameterByName('uid');
-      } else if (isAndroid) {
-        window.location = 'texit://post?uid=' + getParameterByName('uid');
+      if (isIOS || isAndroid) {
+        iframe.src = 'texit://post?uid=' + getParameterByName('uid');
+        document.body.appendChild(iframe);
+
+        // 일정 시간 후 리디렉션 (앱 실행 실패 시만)
+        timeout = setTimeout(function() {
+          if (!appOpened) {
+            if (isIOS) {
+              window.location = 'https://apps.apple.com/app/idYOUR_APP_STORE_ID';
+            } else if (isAndroid) {
+              window.location = 'https://play.google.com/store/apps/details?id=com.yourcompany.yourapp';
+            }
+          }
+        }, 2000); // 2초 대기
       }
 
-      // 일정 시간 후 리디렉션 (앱이 실행되지 않은 경우만)
-      setTimeout(function() {
-        var elapsedTime = Date.now() - startTime; // 경과 시간 계산
-        if (!appOpened && elapsedTime < 8000) {
-          if (isIOS) {
-            window.location = 'https://apps.apple.com/app/idYOUR_APP_STORE_ID';
-          } else if (isAndroid) {
-            window.location = 'https://play.google.com/store/apps/details?id=com.yourcompany.yourapp';
-          }
-        }
-      }, 2000); // 2초 대기
-
-      // 브라우저 focus 이벤트로 앱 실행 여부 확인
-      window.addEventListener("blur", function() {
+      // 앱 실행 여부를 확인하기 위해 focus 이벤트 활용
+      window.addEventListener("focus", function() {
         appOpened = true; // 앱이 실행되었음을 표시
+        clearTimeout(timeout); // 스토어 리디렉션 취소
       });
 
       // URL 파라미터 추출 함수
