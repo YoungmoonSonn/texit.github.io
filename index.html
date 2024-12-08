@@ -1,25 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title> Your Website Tile</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<script type="text/javascript">
-		window.onload = function() {
-			var visitTime = (new Date()).getTime();
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texit App - Redirecting...</title>
+    <script>
+    // 앱 설치 여부를 확인하고, 설치되지 않은 경우 앱 스토어로 리디렉션
+    window.onload = function() {
+      var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      var isAndroid = /Android/i.test(navigator.userAgent);
+      var timeout;
 
-			var isAndroid = /android/i.test(navigator.userAgent);
-			var isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-			if(isAndroid) {
-				location.href = "https://play.google.com/store/apps/details?id=com.example.texit";
-			} else if (isiOS) {
-				location.href = "https://apps.apple.com/app/id0000000000";
-			}
-		}
-	</script>
+      // 앱을 열려고 시도
+      if (isIOS) {
+        window.location = 'texit://post?uid=' + getParameterByName('uid');
+      } else if (isAndroid) {
+        window.location = 'texit://post?uid=' + getParameterByName('uid');
+      }
+
+      // 일정 시간 후에 앱 스토어로 리디렉션
+      timeout = setTimeout(function() {
+        if (isIOS) {
+          window.location = 'https://apps.apple.com/app/idYOUR_APP_STORE_ID';
+        } else if (isAndroid) {
+          window.location = 'https://play.google.com/store/apps/details?id=com.yourcompany.yourapp';
+        }
+      }, 2000); // 2초 후 리디렉션
+
+      // URL 파라미터 추출 함수
+      function getParameterByName(name, url = window.location.href) {
+        name = name.replace(/[\[\]]/g, '\\$&');
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+      }
+    };
+  </script>
 </head>
 <body>
-	<h1>AppLink Test</h1>
-	<p>This is an example of a website.</p>
+<h1>Redirecting...</h1>
+<p>If you are not redirected automatically, <a href="#" id="redirect-link">click here</a>.</p>
 </body>
 </html>
-
