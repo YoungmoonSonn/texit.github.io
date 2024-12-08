@@ -10,7 +10,7 @@
     window.onload = function() {
       var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       var isAndroid = /Android/i.test(navigator.userAgent);
-      var timeout;
+      var appOpened = false;
 
       // 앱을 열려고 시도
       if (isIOS) {
@@ -19,12 +19,19 @@
         window.location = 'texit://post?uid=' + getParameterByName('uid');
       }
 
+      // 앱 실행 여부 확인 (focus 이벤트로 콜백 처리)
+      window.addEventListener("focus", function() {
+        appOpened = true; // 앱이 실행되었음을 표시
+      });
+
       // 일정 시간 후에 앱 스토어로 리디렉션
-      timeout = setTimeout(function() {
-        if (isIOS) {
-          window.location = 'https://apps.apple.com/app/idYOUR_APP_STORE_ID';
-        } else if (isAndroid) {
-          window.location = 'https://play.google.com/store/apps/details?id=com.yourcompany.yourapp';
+      setTimeout(function() {
+        if (!appOpened) {
+          if (isIOS) {
+            window.location = 'https://apps.apple.com/app/idYOUR_APP_STORE_ID';
+          } else if (isAndroid) {
+            window.location = 'https://play.google.com/store/apps/details?id=com.yourcompany.yourapp';
+          }
         }
       }, 2000); // 2초 후 리디렉션
 
@@ -45,3 +52,4 @@
 <p>If you are not redirected automatically, <a href="#" id="redirect-link">click here</a>.</p>
 </body>
 </html>
+
