@@ -6,34 +6,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Texit App - Redirecting...</title>
     <script>
-    // 앱 설치 여부를 확인하고, 설치되지 않은 경우 앱 스토어로 리디렉션
     window.onload = function() {
       var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       var isAndroid = /Android/i.test(navigator.userAgent);
-      var appOpened = false;
+      var appOpened = false; // 앱 실행 여부
+      var startTime = Date.now(); // 시작 시간 저장
 
-      // 앱을 열려고 시도
+      // 앱 실행 시도
       if (isIOS) {
         window.location = 'texit://post?uid=' + getParameterByName('uid');
       } else if (isAndroid) {
         window.location = 'texit://post?uid=' + getParameterByName('uid');
       }
 
-      // 앱 실행 여부 확인 (focus 이벤트로 콜백 처리)
-      window.addEventListener("focus", function() {
-        appOpened = true; // 앱이 실행되었음을 표시
-      });
-
-      // 일정 시간 후에 앱 스토어로 리디렉션
+      // 일정 시간 후 리디렉션 (앱이 실행되지 않은 경우만)
       setTimeout(function() {
-        if (!appOpened) {
+        var elapsedTime = Date.now() - startTime; // 경과 시간 계산
+        if (!appOpened && elapsedTime < 2000) {
           if (isIOS) {
             window.location = 'https://apps.apple.com/app/idYOUR_APP_STORE_ID';
           } else if (isAndroid) {
             window.location = 'https://play.google.com/store/apps/details?id=com.yourcompany.yourapp';
           }
         }
-      }, 2000); // 2초 후 리디렉션
+      }, 2000); // 2초 대기
+
+      // 브라우저 focus 이벤트로 앱 실행 여부 확인
+      window.addEventListener("blur", function() {
+        appOpened = true; // 앱이 실행되었음을 표시
+      });
 
       // URL 파라미터 추출 함수
       function getParameterByName(name, url = window.location.href) {
@@ -45,11 +46,10 @@
         return decodeURIComponent(results[2].replace(/\+/g, ' '));
       }
     };
-  </script>
+    </script>
 </head>
 <body>
 <h1>Redirecting...</h1>
 <p>If you are not redirected automatically, <a href="#" id="redirect-link">click here</a>.</p>
 </body>
 </html>
-
