@@ -22,7 +22,7 @@
       // 일정 시간 후 리디렉션 (앱이 실행되지 않은 경우만)
       setTimeout(function() {
         var elapsedTime = Date.now() - startTime; // 경과 시간 계산
-        if (!appOpened && elapsedTime < 2000) {
+        if (!appOpened && elapsedTime < 8000) {
           if (isIOS) {
             window.location = 'https://apps.apple.com/app/idYOUR_APP_STORE_ID';
           } else if (isAndroid) {
