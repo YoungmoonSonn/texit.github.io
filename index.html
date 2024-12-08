@@ -9,37 +9,42 @@
     window.onload = function() {
       var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       var isAndroid = /Android/i.test(navigator.userAgent);
-      var appOpened = false; // 앱 실행 여부
       var timeout;
+      var appOpened = false;
 
-      // 숨겨진 iframe 생성
-      var iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-
-      // 앱 실행 시도
-      if (isIOS || isAndroid) {
-        iframe.src = 'texit://post?uid=' + getParameterByName('uid');
+      function openApp() {
+        var appUrl = 'texit://post?uid=' + getParameterByName('uid');
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = appUrl;
         document.body.appendChild(iframe);
-
-        // 일정 시간 후 리디렉션 (앱 실행 실패 시만)
-        timeout = setTimeout(function() {
-          if (!appOpened) {
-            if (isIOS) {
-              window.location = 'https://apps.apple.com/app/idYOUR_APP_STORE_ID';
-            } else if (isAndroid) {
-              window.location = 'https://play.google.com/store/apps/details?id=com.yourcompany.yourapp';
-            }
-          }
-        }, 2000); // 2초 대기
+        
+        setTimeout(function() {
+          document.body.removeChild(iframe);
+        }, 2000);
       }
 
-      // 앱 실행 여부를 확인하기 위해 focus 이벤트 활용
-      window.addEventListener("focus", function() {
-        appOpened = true; // 앱이 실행되었음을 표시
-        clearTimeout(timeout); // 스토어 리디렉션 취소
+      function openStore() {
+        if (!appOpened) {
+          if (isIOS) {
+            window.location = 'https://apps.apple.com/app/idYOUR_APP_STORE_ID';
+          } else if (isAndroid) {
+            window.location = 'https://play.google.com/store/apps/details?id=com.yourcompany.yourapp';
+          }
+        }
+      }
+
+      openApp();
+
+      // 앱 열림 감지
+      window.addEventListener('pagehide', function() {
+        appOpened = true;
+        clearTimeout(timeout);
       });
 
-      // URL 파라미터 추출 함수
+      // 일정 시간 후에 앱 스토어로 리디렉션
+      timeout = setTimeout(openStore, 2000);
+
       function getParameterByName(name, url = window.location.href) {
         name = name.replace(/[\[\]]/g, '\\$&');
         var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
