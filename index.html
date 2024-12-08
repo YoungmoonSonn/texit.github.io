@@ -9,7 +9,41 @@
     window.onload = function() {
       var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       var isAndroid = /Android/i.test(navigator.userAgent);
-      var appUrl, storeUrl;
+      var timeout;
+      var appOpened = false;
+
+      function openApp() {
+        var appUrl = 'texit://post?uid=' + getParameterByName('uid');
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = appUrl;
+        document.body.appendChild(iframe);
+        
+        setTimeout(function() {
+          document.body.removeChild(iframe);
+        }, 2000);
+      }
+
+      function openStore() {
+        if (!appOpened) {
+          if (isIOS) {
+            window.location = 'https://apps.apple.com/app/idYOUR_APP_STORE_ID';
+          } else if (isAndroid) {
+            window.location = 'https://play.google.com/store/apps/details?id=com.yourcompany.yourapp';
+          }
+        }
+      }
+
+      openApp();
+
+      // 앱 열림 감지
+      window.addEventListener('pagehide', function() {
+        appOpened = true;
+        clearTimeout(timeout);
+      });
+
+      // 일정 시간 후에 앱 스토어로 리디렉션
+      timeout = setTimeout(openStore, 2000);
 
       function getParameterByName(name, url = window.location.href) {
         name = name.replace(/[\[\]]/g, '\\$&');
@@ -19,32 +53,6 @@
         if (!results[2]) return '';
         return decodeURIComponent(results[2].replace(/\+/g, ' '));
       }
-
-      if (isIOS) {
-        appUrl = 'texit://post?uid=' + getParameterByName('uid');
-        storeUrl = 'https://apps.apple.com/app/idYOUR_APP_STORE_ID';
-      } else if (isAndroid) {
-        appUrl = 'intent://post?uid=' + getParameterByName('uid') + '#Intent;scheme=texit;package=com.yourcompany.yourapp;end';
-        storeUrl = 'https://play.google.com/store/apps/details?id=com.yourcompany.yourapp';
-      }
-
-      function tryOpenApp() {
-        if (isAndroid) {
-          window.location = appUrl;
-        } else if (isIOS) {
-          window.location.href = appUrl;
-          setTimeout(function() {
-            window.location.href = storeUrl;
-          }, 8000);
-        }
-      }
-
-      tryOpenApp();
-
-      document.getElementById('redirect-link').onclick = function(e) {
-        e.preventDefault();
-        tryOpenApp();
-      };
     };
     </script>
 </head>
