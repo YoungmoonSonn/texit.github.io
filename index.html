@@ -35,6 +35,38 @@
         .calendar {
             font-size: 16px;
         }
+        .calendar-container {
+            display: inline-block;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .calendar-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .calendar-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .calendar-table th, .calendar-table td {
+            width: 14.2%;
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .calendar-table th {
+            background-color: #f4f4f4;
+        }
+        .calendar-table td {
+            background-color: #fff;
+        }
+        .calendar-table .selected {
+            background-color: #ffeb3b;
+            font-weight: bold;
+        }
         .gallery {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -81,25 +113,37 @@
 <!-- 세번째 영역 -->
 <div class="section calendar">
     <p><strong>2025.2.8 금요일 오후 7시</strong></p>
-    <div>
-        <!-- 간단한 달력 -->
-        <table border="1" style="border-collapse: collapse; width: 100%; max-width: 300px;">
-            <tr>
-                <th>일</th>
-                <th>월</th>
-                <th>화</th>
-                <th>수</th>
-                <th>목</th>
-                <th>금</th>
-                <th>토</th>
-            </tr>
-            <tr>
-                <td></td><td></td><td></td><td></td><td>1</td><td>2</td><td>3</td>
-            </tr>
-            <tr>
-                <td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td>
-            </tr>
-            <!-- 추가 행 생략 -->
+    <div class="calendar-container">
+        <div class="calendar-header">2025년 2월</div>
+        <table class="calendar-table">
+            <thead>
+                <tr>
+                    <th>일</th>
+                    <th>월</th>
+                    <th>화</th>
+                    <th>수</th>
+                    <th>목</th>
+                    <th>금</th>
+                    <th>토</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td><td></td><td></td><td></td><td>1</td><td>2</td><td>3</td>
+                </tr>
+                <tr>
+                    <td>4</td><td>5</td><td>6</td><td class="selected">7</td><td>8</td><td>9</td><td>10</td>
+                </tr>
+                <tr>
+                    <td>11</td><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td>
+                </tr>
+                <tr>
+                    <td>18</td><td>19</td><td>20</td><td>21</td><td>22</td><td>23</td><td>24</td>
+                </tr>
+                <tr>
+                    <td>25</td><td>26</td><td>27</td><td>28</td><td></td><td></td><td></td>
+                </tr>
+            </tbody>
         </table>
     </div>
 </div>
