@@ -32,10 +32,6 @@
             font-weight: bold;
             text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
         }
-        .invitation {
-            font-size: 18px;
-            line-height: 1.8;
-        }
         .calendar {
             font-size: 16px;
         }
@@ -46,7 +42,8 @@
         }
         .gallery img {
             width: 100%;
-            height: auto;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
             cursor: pointer;
             border-radius: 5px;
         }
@@ -77,11 +74,8 @@
 </div>
 
 <!-- 두번째 영역 -->
-<div class="section invitation">
-    <p><strong>INVITATION</strong></p>
-    <p>초대 합니다.</p>
-    <p>하얀 겨울날 저희 소중한 <br>만남을 축하해주셔서<br>감사합니다</p>
-    <p><strong>손영문<br>조나래</strong></p>
+<div class="section">
+    <img src="thanks.jpg" alt="Thank You">
 </div>
 
 <!-- 세번째 영역 -->
@@ -122,6 +116,11 @@
         <img src="6.jpg" alt="Gallery Image" onclick="openLightbox(this.src)">
         <img src="7.jpg" alt="Gallery Image" onclick="openLightbox(this.src)">
     </div>
+</div>
+
+<!-- 다섯번째 영역 -->
+<div class="section">
+    <img src="map.jpg" alt="Map">
 </div>
 
 <!-- Lightbox -->
