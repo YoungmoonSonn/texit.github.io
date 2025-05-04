@@ -84,29 +84,42 @@
   </div>
 
   <div class="section" id="postSection">
-    <h3>Post by Document ID</h3>
-    <input type="text" id="postIdInput" placeholder="문서 ID 입력" />
-    <button onclick="loadPost()">조회</button>
-    <div id="postResult" class="infoBox"></div>
+    <h3>문서 ID로 posts 검색</h3>
+    <input type="text" id="searchInput" placeholder="문서 ID 입력" />
+    <button onclick="searchPost()">검색</button>
+    <div id="resultBox" class="infoBox"></div>
+
+    <div id="extraFields">
+      <h3>mainContents</h3>
+      <div id="mainContentsBox" class="infoBox"></div>
+
+      <h3>shadeContents</h3>
+      <div id="shadeContentsBox" class="infoBox"></div>
+    </div>
+
+    <div id="repliesSection">
+      <h3>Replies</h3>
+      <div id="repliesBox" class="infoBox"></div>
+    </div>
   </div>
 
+  <!-- Placeholder sections -->
   <div class="section" id="replySection">
-    <h3>Reply by Reply ID</h3>
-    <input type="text" id="replyIdInput" placeholder="댓글 문서 ID 입력" />
-    <button onclick="loadReply()">조회</button>
-    <div id="replyResult" class="infoBox"></div>
+    <h3>Reply by reply id</h3>
+    <p>추후 구현 예정입니다.</p>
   </div>
 
   <div class="section" id="reportedPostsSection">
     <h3>Reported Posts</h3>
-    <div id="reportedPostsResult" class="infoBox"></div>
+    <p>추후 구현 예정입니다.</p>
   </div>
 
   <div class="section" id="reportedRepliesSection">
     <h3>Reported Replies</h3>
-    <div id="reportedRepliesResult" class="infoBox"></div>
+    <p>추후 구현 예정입니다.</p>
   </div>
 
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
@@ -121,7 +134,7 @@
       }
 
       const config = {
-        apiKey,
+        apiKey: apiKey,
         authDomain: "texit-test.firebaseapp.com",
         databaseURL: "https://texit-test-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "texit-test",
@@ -131,11 +144,15 @@
         measurementId: "G-2JX5J62THS"
       };
 
-      firebase.initializeApp(config);
-      db = firebase.firestore();
-      alert("Firebase 초기화 완료!");
-      document.getElementById("configSection").style.display = "none";
-      document.getElementById("mainMenu").style.display = "block";
+      try {
+        firebase.initializeApp(config);
+        db = firebase.firestore();
+        alert("Firebase 초기화 완료!");
+        document.getElementById("configSection").style.display = "none";
+        document.getElementById("mainMenu").style.display = "block";
+      } catch (error) {
+        alert("Firebase 초기화 실패: " + error.message);
+      }
     }
 
     function showSection(sectionId) {
@@ -144,33 +161,63 @@
       document.getElementById(sectionId).style.display = "block";
     }
 
-    async function loadPost() {
-      const postId = document.getElementById("postIdInput").value.trim();
-      const resultBox = document.getElementById("postResult");
-      if (!postId) {
+    async function searchPost() {
+      const input = document.getElementById("searchInput").value.trim();
+      const resultBox = document.getElementById("resultBox");
+      const extraSection = document.getElementById("extraFields");
+      const repliesSection = document.getElementById("repliesSection");
+      const mainBox = document.getElementById("mainContentsBox");
+      const shadeBox = document.getElementById("shadeContentsBox");
+      const repliesBox = document.getElementById("repliesBox");
+
+      if (!input) {
         alert("문서 ID를 입력해주세요.");
         return;
       }
-      try {
-        const doc = await db.collection("posts").doc(postId).get();
-        resultBox.innerText = doc.exists ? JSON.stringify(doc.data(), null, 2) : "❌ 문서를 찾을 수 없습니다.";
-      } catch (e) {
-        resultBox.innerText = `오류 발생: ${e.message}`;
-      }
-    }
 
-    async function loadReply() {
-      const replyId = document.getElementById("replyIdInput").value.trim();
-      const resultBox = document.getElementById("replyResult");
-      if (!replyId) {
-        alert("댓글 문서 ID를 입력해주세요.");
-        return;
-      }
       try {
-        const doc = await db.collection("replies").doc(replyId).get();
-        resultBox.innerText = doc.exists ? JSON.stringify(doc.data(), null, 2) : "❌ 댓글을 찾을 수 없습니다.";
-      } catch (e) {
-        resultBox.innerText = `오류 발생: ${e.message}`;
+        const docRef = db.collection("posts").doc(input);
+        const doc = await docRef.get();
+
+        if (doc.exists) {
+          const data = doc.data();
+          resultBox.style.display = "block";
+          resultBox.innerText = `📄 문서 ID: ${doc.id}\n\n${JSON.stringify(data, null, 2)}`;
+
+          mainBox.innerText = data.mainContents || "(비어 있음)";
+          shadeBox.innerText = data.shadeContents || "(비어 있음)";
+          extraSection.style.display = "block";
+
+          const repliesSnapshot = await db.collection("replies")
+            .where("postId", "==", input)
+            .get();
+
+          let repliesText = "";
+          repliesSnapshot.forEach(doc => {
+            const reply = doc.data();
+            if (reply.mainContents) {
+              repliesText += `• ${reply.mainContents}\n`;
+            }
+          });
+
+          if (!repliesText) {
+            repliesText = "댓글이 없습니다.";
+          }
+
+          repliesBox.innerText = repliesText;
+          repliesSection.style.display = "block";
+
+        } else {
+          resultBox.style.display = "block";
+          resultBox.innerText = `❌ '${input}' 문서를 찾을 수 없습니다.`;
+          extraSection.style.display = "none";
+          repliesSection.style.display = "none";
+        }
+      } catch (error) {
+        resultBox.style.display = "block";
+        resultBox.innerText = `오류 발생: ${error.message}`;
+        extraSection.style.display = "none";
+        repliesSection.style.display = "none";
       }
     }
   </script>
