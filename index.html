@@ -155,17 +155,18 @@
             .where("postId", "==", input)
             .get();
 
-          if (repliesSnapshot.empty) {
-            repliesBox.innerText = "댓글이 없습니다.\n\n---\n\uD83D\uDCCC mainContents: " + (data.mainContents || "(비어 있음)");
-          } else {
-            let repliesText = "";
-            repliesSnapshot.forEach(doc => {
-              const reply = doc.data();
-              repliesText += `• ${reply.content || "(내용 없음)"}\n`;
-            });
-            repliesText += `\n---\n\uD83D\uDCCC mainContents: ${data.mainContents || "(비어 있음)"}`;
-            repliesBox.innerText = repliesText;
+          let repliesText = "";
+          repliesSnapshot.forEach(doc => {
+            const reply = doc.data();
+            if (reply.mainContents) {
+              repliesText += `• ${reply.mainContents}\n`;
+            }
+          });
+          if (!repliesText) {
+            repliesText = "댓글이 없습니다.";
           }
+          repliesText += `\n---\n📌 mainContents: ${data.mainContents || "(비어 있음)"}`;
+          repliesBox.innerText = repliesText;
 
           repliesSection.style.display = "block";
 
