@@ -1,195 +1,101 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wedding Invitation</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #ffffff;
-            color: #333;
-        }
-        .section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-        }
-        .section img {
-            width: 100%;
-            height: auto;
-        }
-        .title {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 26px; /* 폰트 크기 조정 */
-            color: white;
-            font-family: 'Cursive', serif; /* 청첩장 느낌의 폰트 */
-            font-weight: bold;
-            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
-            white-space: nowrap; /* 한 줄로 표시 */
-        }
-        .calendar {
-            font-size: 16px;
-        }
-        .calendar-container {
-            display: inline-block;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .calendar-header {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .calendar-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .calendar-table th, .calendar-table td {
-            width: 14.2%;
-            text-align: center;
-            padding: 10px;
-            border: 1px solid #ddd;
-        }
-        .calendar-table th {
-            background-color: #f4f4f4;
-        }
-        .calendar-table td {
-            background-color: #fff;
-        }
-        .calendar-table .selected {
-            background-color: #ffeb3b;
-            font-weight: bold;
-        }
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-        }
-        .gallery img {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            object-fit: cover;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        #lightbox {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-        }
-        #lightbox img {
-            max-width: 90%;
-            max-height: 90%;
-            border-radius: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Firebase Posts 검색</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, button { padding: 8px; margin: 5px 0; width: 100%; max-width: 400px; }
+    #resultBox {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-top: 20px;
+      display: none;
+      background-color: #f9f9f9;
+      white-space: pre-wrap;
+    }
+    .section { margin-bottom: 30px; }
+    #searchSection { display: none; }
+  </style>
 </head>
 <body>
 
-<!-- 첫번째 영역 -->
-<div class="section" style="position: relative;">
-    <img src="intro.jpg" alt="Wedding">
-    <div class="title">We are getting married</div>
-</div>
+  <h2>Firebase API Key 입력</h2>
+  <div class="section" id="configSection">
+    <input id="apiKey" placeholder="apiKey">
+    <button onclick="initializeFirebase()">Firebase 초기화</button>
+  </div>
 
-<!-- 두번째 영역 -->
-<div class="section">
-    <img src="thanks.jpg" alt="Thank You">
-</div>
+  <div class="section" id="searchSection">
+    <h2>문서 ID로 posts 검색</h2>
+    <input type="text" id="searchInput" placeholder="문서 ID 입력">
+    <button onclick="searchPost()">검색</button>
+    <div id="resultBox"></div>
+  </div>
 
-<!-- 세번째 영역 -->
-<div class="section calendar">
-    <p><strong>2025.2.7 금요일 오후 7시</strong></p>
-    <div class="calendar-container">
-        <div class="calendar-header">2025년 2월</div>
-        <table class="calendar-table">
-            <thead>
-                <tr>
-                    <th>일</th>
-                    <th>월</th>
-                    <th>화</th>
-                    <th>수</th>
-                    <th>목</th>
-                    <th>금</th>
-                    <th>토</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td></td><td></td><td></td><td></td><td></td><td></td><td>1</td>
-                </tr>
-                <tr>
-                    <td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td class="selected">7</td><td>8</td>
-                </tr>
-                <tr>
-                    <td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td>
-                </tr>
-                <tr>
-                    <td>16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td><td>22</td>
-                </tr>
-                <tr>
-                    <td>23</td><td>24</td><td>25</td><td>26</td><td>27</td><td>28</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-<!-- 네번째 영역 -->
-<div class="section">
-    <p><strong>갤러리</strong></p>
-    <div class="gallery">
-        <img src="intro.jpg" alt="Gallery Image" onclick="openLightbox(this.src)">
-        <img src="2.jpg" alt="Gallery Image" onclick="openLightbox(this.src)">
-        <img src="3.jpg" alt="Gallery Image" onclick="openLightbox(this.src)">
-        <img src="4.jpg" alt="Gallery Image" onclick="openLightbox(this.src)">
-        <img src="5.jpg" alt="Gallery Image" onclick="openLightbox(this.src)">
-        <img src="6.jpg" alt="Gallery Image" onclick="openLightbox(this.src)">
-        <img src="7.jpg" alt="Gallery Image" onclick="openLightbox(this.src)">
-        <img src="8.jpg" alt="Gallery Image" onclick="openLightbox(this.src)">
-        <img src="9.jpg" alt="Gallery Image" onclick="openLightbox(this.src)">
-    </div>
-</div>
+  <script>
+    let db;
 
-<!-- 다섯번째 영역 -->
-<div class="section">
-    <img src="map.jpg" alt="Map">
-</div>
+    function initializeFirebase() {
+      const apiKey = document.getElementById("apiKey").value.trim();
+      if (!apiKey) {
+        alert("apiKey를 입력해주세요.");
+        return;
+      }
 
-<!-- Lightbox -->
-<div id="lightbox" onclick="closeLightbox()">
-    <img id="lightbox-img" src="" alt="">
-</div>
+      const config = {
+        apiKey: apiKey,
+        authDomain: "texit-test.firebaseapp.com",
+  databaseURL: "https://texit-test-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "texit-test",
+  storageBucket: "texit-test.firebasestorage.app",
+  messagingSenderId: "869677715019",
+  appId: "1:869677715019:web:cb8020cb584ad8411c07ce",
+  measurementId: "G-2JX5J62THS"
+          
+      };
 
-<script>
-    function openLightbox(src) {
-        const lightbox = document.getElementById('lightbox');
-        const lightboxImg = document.getElementById('lightbox-img');
-        lightbox.style.display = 'flex';
-        lightboxImg.src = src;
+      try {
+        firebase.initializeApp(config);
+        db = firebase.firestore();
+        alert("Firebase 초기화 완료!");
+        document.getElementById("configSection").style.display = "none";
+        document.getElementById("searchSection").style.display = "block";
+      } catch (error) {
+        alert("Firebase 초기화 실패: " + error.message);
+      }
     }
 
-    function closeLightbox() {
-        const lightbox = document.getElementById('lightbox');
-        lightbox.style.display = 'none';
-    }
-</script>
+    async function searchPost() {
+      const input = document.getElementById("searchInput").value.trim();
+      const resultBox = document.getElementById("resultBox");
 
+      if (!input) {
+        alert("문서 ID를 입력해주세요.");
+        return;
+      }
+
+      try {
+        const docRef = db.collection("posts").doc(input);
+        const doc = await docRef.get();
+
+        if (doc.exists) {
+          const data = doc.data();
+          resultBox.style.display = "block";
+          resultBox.innerText = `📄 문서 ID: ${doc.id}\n\n${JSON.stringify(data, null, 2)}`;
+        } else {
+          resultBox.style.display = "block";
+          resultBox.innerText = `❌ '${input}' 문서를 찾을 수 없습니다.`;
+        }
+      } catch (error) {
+        resultBox.style.display = "block";
+        resultBox.innerText = `오류 발생: ${error.message}`;
+      }
+    }
+  </script>
 </body>
 </html>
-
