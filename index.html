@@ -160,15 +160,14 @@
             const reply = doc.data();
             if (reply.mainContents) {
               repliesText += `• ${reply.mainContents}\n`;
-              
             }
           });
+
           if (!repliesText) {
             repliesText = "댓글이 없습니다.";
           }
-          repliesText += `\n---\n📌 mainContents: ${data.mainContents || "(비어 있음)"}`;
-          repliesBox.innerText = repliesText;
 
+          repliesBox.innerText = repliesText;
           repliesSection.style.display = "block";
 
         } else {
@@ -187,4 +186,3 @@
   </script>
 </body>
 </html>
- 
