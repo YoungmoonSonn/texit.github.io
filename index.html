@@ -110,7 +110,10 @@
 
   <div class="section" id="reportedPostsSection">
     <h3>Reported Posts</h3>
-    <p>추후 구현 예정입니다.</p>
+    <div id="reportedPostsList" class="infoBox"></div>
+    <div id="reportedPostsDetails" class="infoBox"></div>
+    <div id="reportedPostMain" class="infoBox"></div>
+    <div id="reportedPostShade" class="infoBox"></div>
   </div>
 
   <div class="section" id="reportedRepliesSection">
@@ -166,6 +169,8 @@
 
       if (sectionId === "reportedRepliesSection") {
         loadReportedReplies();
+      }else if (sectionId === "reportedPostsSection") {
+        loadReportedPosts();
       }
     }
 
@@ -244,6 +249,68 @@
       });
     }
 
+async function loadReportedPosts() {
+  const listDiv = document.getElementById("reportedPostsList");
+  listDiv.innerHTML = "로딩 중...";
+  const snapshot = await db.collection("reported_posts").get();
+
+  if (snapshot.empty) {
+    listDiv.innerText = "신고된 포스트가 없습니다.";
+    return;
+  }
+
+  listDiv.innerHTML = "<strong>문서 ID 목록:</strong><br/>";
+  snapshot.forEach(doc => {
+    const link = document.createElement("div");
+    link.textContent = `• ${doc.id}`;
+    link.style.cursor = "pointer";
+    link.style.color = "#1565c0";
+    link.onclick = () => showReportedPostDetails(doc.id);
+    listDiv.appendChild(link);
+  });
+}
+
+async function showReportedPostDetails(docId) {
+  const detailDiv = document.getElementById("reportedPostsDetails");
+  const mainBox = document.getElementById("reportedPostMain");
+  const shadeBox = document.getElementById("reportedPostShade");
+
+  detailDiv.innerText = "로딩 중...";
+  mainBox.innerText = "";
+  shadeBox.innerText = "";
+
+  try {
+    const reportedDoc = await db.collection("reported_posts").doc(docId).get();
+    if (!reportedDoc.exists) {
+      detailDiv.innerText = `❌ ${docId} 문서를 찾을 수 없습니다.`;
+      return;
+    }
+
+    const reportedData = reportedDoc.data();
+    detailDiv.innerText = `📄 신고 문서 (${docId})\n\n${JSON.stringify(reportedData, null, 2)}`;
+
+    const postId = reportedData.postId;
+    if (!postId) {
+      mainBox.innerText = "⚠️ postId 필드가 없습니다.";
+      return;
+    }
+
+    const postDoc = await db.collection("posts").doc(postId).get();
+    if (!postDoc.exists) {
+      mainBox.innerText = `❌ posts/${postId} 문서를 찾을 수 없습니다.`;
+      return;
+    }
+
+    const postData = postDoc.data();
+    mainBox.innerText = `📌 posts/${postId} → mainContents:\n${postData.mainContents || "(비어 있음)"}`;
+    shadeBox.innerText = `📌 posts/${postId} → shadeContents:\n${postData.shadeContents || "(비어 있음)"}`;
+
+  } catch (e) {
+    detailDiv.innerText = "오류 발생: " + e.message;
+  }
+}
+
+    
     async function showReportedReplyDetails(docId) {
       const detailDiv = document.getElementById("reportedRepliesDetails");
       const postMain = document.getElementById("postMain");
