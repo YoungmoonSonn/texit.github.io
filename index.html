@@ -63,6 +63,12 @@
     #mainMenu, #postSection, #replySection, #reportedPostsSection, #reportedRepliesSection {
       display: none;
     }
+
+    .clickable-id {
+      color: #1976d2;
+      cursor: pointer;
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -78,7 +84,7 @@
     <div class="buttonGroup">
       <button onclick="showSection('postSection')">Post by doc id</button>
       <button onclick="showSection('replySection')">Reply by reply id</button>
-      <button onclick="showSection('reportedPostsSection')">Reported Posts</button>
+      <button onclick="showSection('reportedPostsSection'); loadReportedPosts();">Reported Posts</button>
       <button onclick="showSection('reportedRepliesSection')">Reported Replies</button>
     </div>
   </div>
@@ -103,7 +109,6 @@
     </div>
   </div>
 
-  <!-- Placeholder sections -->
   <div class="section" id="replySection">
     <h3>Reply by reply id</h3>
     <p>추후 구현 예정입니다.</p>
@@ -111,7 +116,10 @@
 
   <div class="section" id="reportedPostsSection">
     <h3>Reported Posts</h3>
-    <p>추후 구현 예정입니다.</p>
+    <div id="reportedPostList" class="infoBox"></div>
+    <div id="reportedPostDetail" class="infoBox"></div>
+    <div id="originalPostMain" class="infoBox"></div>
+    <div id="originalPostShade" class="infoBox"></div>
   </div>
 
   <div class="section" id="reportedRepliesSection">
@@ -119,7 +127,6 @@
     <p>추후 구현 예정입니다.</p>
   </div>
 
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
@@ -147,7 +154,7 @@
       try {
         firebase.initializeApp(config);
         db = firebase.firestore();
-        alert("Firebase 초기화 완료!?");
+        alert("Firebase 초기화 완료!");
         document.getElementById("configSection").style.display = "none";
         document.getElementById("mainMenu").style.display = "block";
       } catch (error) {
@@ -218,6 +225,76 @@
         resultBox.innerText = `오류 발생: ${error.message}`;
         extraSection.style.display = "none";
         repliesSection.style.display = "none";
+      }
+    }
+
+    async function loadReportedPosts() {
+      const listBox = document.getElementById("reportedPostList");
+      const detailBox = document.getElementById("reportedPostDetail");
+      const mainBox = document.getElementById("originalPostMain");
+      const shadeBox = document.getElementById("originalPostShade");
+
+      listBox.innerHTML = "불러오는 중...";
+      detailBox.innerText = "";
+      mainBox.innerText = "";
+      shadeBox.innerText = "";
+
+      try {
+        const snapshot = await db.collection("reported_posts").get();
+        if (snapshot.empty) {
+          listBox.innerText = "📭 신고된 게시물이 없습니다.";
+          return;
+        }
+
+        listBox.innerHTML = "<strong>📋 문서 ID 목록:</strong><br/>";
+        snapshot.forEach(doc => {
+          const div = document.createElement("div");
+          div.className = "clickable-id";
+          div.innerText = doc.id;
+          div.onclick = () => loadReportedPostDetail(doc.id);
+          listBox.appendChild(div);
+        });
+      } catch (e) {
+        listBox.innerText = `❌ 오류: ${e.message}`;
+      }
+    }
+
+    async function loadReportedPostDetail(docId) {
+      const detailBox = document.getElementById("reportedPostDetail");
+      const mainBox = document.getElementById("originalPostMain");
+      const shadeBox = document.getElementById("originalPostShade");
+      detailBox.innerText = mainBox.innerText = shadeBox.innerText = "불러오는 중...";
+
+      try {
+        const doc = await db.collection("reported_posts").doc(docId).get();
+        if (!doc.exists) {
+          detailBox.innerText = "❌ 신고 문서를 찾을 수 없습니다.";
+          return;
+        }
+
+        const data = doc.data();
+        detailBox.innerText = `📄 신고 문서 ID: ${doc.id}\n\n${JSON.stringify(data, null, 2)}`;
+
+        const postId = data.postId;
+        if (!postId) {
+          mainBox.innerText = "⚠️ postId 필드가 없습니다.";
+          shadeBox.innerText = "";
+          return;
+        }
+
+        const postDoc = await db.collection("posts").doc(postId).get();
+        if (!postDoc.exists) {
+          mainBox.innerText = "❌ 원본 게시글을 찾을 수 없습니다.";
+          shadeBox.innerText = "";
+          return;
+        }
+
+        const postData = postDoc.data();
+        mainBox.innerText = `📌 mainContents: ${postData.mainContents || "(없음)"}`;
+        shadeBox.innerText = `🌑 shadeContents: ${postData.shadeContents || "(없음)"}`;
+      } catch (e) {
+        detailBox.innerText = `❌ 오류: ${e.message}`;
+        mainBox.innerText = shadeBox.innerText = "";
       }
     }
   </script>
