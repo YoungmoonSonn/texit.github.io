@@ -58,11 +58,6 @@
     #searchSection, #extraFields, #repliesSection {
       display: none;
     }
-
-    .replyItem {
-      border-bottom: 1px solid #eee;
-      padding: 10px 0;
-    }
   </style>
 </head>
 <body>
@@ -152,15 +147,13 @@
           resultBox.style.display = "block";
           resultBox.innerText = `📄 문서 ID: ${doc.id}\n\n${JSON.stringify(data, null, 2)}`;
 
-          // main/shade
           mainBox.innerText = data.mainContents || "(비어 있음)";
           shadeBox.innerText = data.shadeContents || "(비어 있음)";
           extraSection.style.display = "block";
 
-          // replies
+          // replies 조회 (정렬 없음)
           const repliesSnapshot = await db.collection("replies")
             .where("postId", "==", input)
-            .orderBy("createdAt", "asc") // 또는 timestamp
             .get();
 
           if (repliesSnapshot.empty) {
