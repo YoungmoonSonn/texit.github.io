@@ -55,8 +55,13 @@
       margin-right: auto;
     }
 
-    #searchSection, #extraFields {
+    #searchSection, #extraFields, #repliesSection {
       display: none;
+    }
+
+    .replyItem {
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
     }
   </style>
 </head>
@@ -81,6 +86,11 @@
 
     <h3>shadeContents</h3>
     <div id="shadeContentsBox" class="infoBox"></div>
+  </div>
+
+  <div class="section" id="repliesSection">
+    <h3>Replies</h3>
+    <div id="repliesBox" class="infoBox"></div>
   </div>
 
   <!-- Firebase SDKs -->
@@ -123,8 +133,10 @@
       const input = document.getElementById("searchInput").value.trim();
       const resultBox = document.getElementById("resultBox");
       const extraSection = document.getElementById("extraFields");
+      const repliesSection = document.getElementById("repliesSection");
       const mainBox = document.getElementById("mainContentsBox");
       const shadeBox = document.getElementById("shadeContentsBox");
+      const repliesBox = document.getElementById("repliesBox");
 
       if (!input) {
         alert("문서 ID를 입력해주세요.");
@@ -140,19 +152,41 @@
           resultBox.style.display = "block";
           resultBox.innerText = `📄 문서 ID: ${doc.id}\n\n${JSON.stringify(data, null, 2)}`;
 
-          // 추가 필드 표시
+          // main/shade
           mainBox.innerText = data.mainContents || "(비어 있음)";
           shadeBox.innerText = data.shadeContents || "(비어 있음)";
           extraSection.style.display = "block";
+
+          // replies
+          const repliesSnapshot = await db.collection("replies")
+            .where("postId", "==", input)
+            .orderBy("createdAt", "asc") // 또는 timestamp
+            .get();
+
+          if (repliesSnapshot.empty) {
+            repliesBox.innerText = "댓글이 없습니다.";
+          } else {
+            let repliesText = "";
+            repliesSnapshot.forEach(doc => {
+              const reply = doc.data();
+              repliesText += `• ${reply.content || "(내용 없음)"}\n`;
+            });
+            repliesBox.innerText = repliesText;
+          }
+
+          repliesSection.style.display = "block";
+
         } else {
           resultBox.style.display = "block";
           resultBox.innerText = `❌ '${input}' 문서를 찾을 수 없습니다.`;
           extraSection.style.display = "none";
+          repliesSection.style.display = "none";
         }
       } catch (error) {
         resultBox.style.display = "block";
         resultBox.innerText = `오류 발생: ${error.message}`;
         extraSection.style.display = "none";
+        repliesSection.style.display = "none";
       }
     }
   </script>
