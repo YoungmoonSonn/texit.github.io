@@ -1,36 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Firebase Posts 검색</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    input, button { padding: 8px; margin: 5px 0; width: 100%; max-width: 400px; }
-    #resultBox {
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      box-sizing: border-box;
+      background-color: #f5f5f5;
+    }
+
+    h2, h3 {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+    }
+
+    input, button {
+      padding: 12px;
+      margin: 5px 0;
+      width: 100%;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    button:hover {
+      background-color: #1565c0;
+    }
+
+    #resultBox, .infoBox {
       border: 1px solid #ccc;
       padding: 15px;
-      margin-top: 20px;
-      display: none;
-      background-color: #f9f9f9;
+      margin-top: 10px;
+      background-color: #ffffff;
       white-space: pre-wrap;
+      border-radius: 4px;
+      font-size: 0.95rem;
     }
-    .section { margin-bottom: 30px; }
-    #searchSection { display: none; }
+
+    .section {
+      margin-bottom: 30px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #searchSection, #extraFields {
+      display: none;
+    }
   </style>
 </head>
 <body>
 
-  <h2>Firebase API Key 입력</h2>
   <div class="section" id="configSection">
-    <input id="apiKey" placeholder="apiKey">
+    <h2>Firebase API Key 입력</h2>
+    <input id="apiKey" placeholder="apiKey" />
     <button onclick="initializeFirebase()">Firebase 초기화</button>
   </div>
 
   <div class="section" id="searchSection">
     <h2>문서 ID로 posts 검색</h2>
-    <input type="text" id="searchInput" placeholder="문서 ID 입력">
+    <input type="text" id="searchInput" placeholder="문서 ID 입력" />
     <button onclick="searchPost()">검색</button>
     <div id="resultBox"></div>
+  </div>
+
+  <div class="section" id="extraFields">
+    <h3>mainContents</h3>
+    <div id="mainContentsBox" class="infoBox"></div>
+
+    <h3>shadeContents</h3>
+    <div id="shadeContentsBox" class="infoBox"></div>
   </div>
 
   <!-- Firebase SDKs -->
@@ -50,13 +100,12 @@
       const config = {
         apiKey: apiKey,
         authDomain: "texit-test.firebaseapp.com",
-  databaseURL: "https://texit-test-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "texit-test",
-  storageBucket: "texit-test.firebasestorage.app",
-  messagingSenderId: "869677715019",
-  appId: "1:869677715019:web:cb8020cb584ad8411c07ce",
-  measurementId: "G-2JX5J62THS"
-          
+        databaseURL: "https://texit-test-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "texit-test",
+        storageBucket: "texit-test.firebasestorage.app",
+        messagingSenderId: "869677715019",
+        appId: "1:869677715019:web:cb8020cb584ad8411c07ce",
+        measurementId: "G-2JX5J62THS"
       };
 
       try {
@@ -73,6 +122,9 @@
     async function searchPost() {
       const input = document.getElementById("searchInput").value.trim();
       const resultBox = document.getElementById("resultBox");
+      const extraSection = document.getElementById("extraFields");
+      const mainBox = document.getElementById("mainContentsBox");
+      const shadeBox = document.getElementById("shadeContentsBox");
 
       if (!input) {
         alert("문서 ID를 입력해주세요.");
@@ -87,13 +139,20 @@
           const data = doc.data();
           resultBox.style.display = "block";
           resultBox.innerText = `📄 문서 ID: ${doc.id}\n\n${JSON.stringify(data, null, 2)}`;
+
+          // 추가 필드 표시
+          mainBox.innerText = data.mainContents || "(비어 있음)";
+          shadeBox.innerText = data.shadeContents || "(비어 있음)";
+          extraSection.style.display = "block";
         } else {
           resultBox.style.display = "block";
           resultBox.innerText = `❌ '${input}' 문서를 찾을 수 없습니다.`;
+          extraSection.style.display = "none";
         }
       } catch (error) {
         resultBox.style.display = "block";
         resultBox.innerText = `오류 발생: ${error.message}`;
+        extraSection.style.display = "none";
       }
     }
   </script>
