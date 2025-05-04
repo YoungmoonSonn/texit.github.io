@@ -151,7 +151,7 @@
           shadeBox.innerText = data.shadeContents || "(비어 있음)";
           extraSection.style.display = "block";
 
-          // replies 조회 (정렬 없음)
+          // 🔄 replies: 단순 postId로만 조회 (정렬 없음)
           const repliesSnapshot = await db.collection("replies")
             .where("postId", "==", input)
             .get();
