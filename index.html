@@ -72,177 +72,36 @@
   </style>
 </head>
 <body>
-
-  <div class="section" id="configSection">
-    <h2>Firebase API Key 입력</h2>
-    <input id="apiKey" placeholder="apiKey" />
-    <button onclick="initializeFirebase()">Firebase 초기화</button>
-  </div>
-
-  <div class="section" id="mainMenu">
-    <h2>기능 선택</h2>
-    <div class="buttonGroup">
-      <button onclick="showSection('postSection')">Post by doc id</button>
-      <button onclick="showSection('replySection')">Reply by reply id</button>
-      <button onclick="showSection('reportedPostsSection'); loadReportedPosts();">Reported Posts</button>
-      <button onclick="showSection('reportedRepliesSection')">Reported Replies</button>
-    </div>
-  </div>
-
-  <div class="section" id="postSection">
-    <h3>문서 ID로 posts 검색</h3>
-    <input type="text" id="searchInput" placeholder="문서 ID 입력" />
-    <button onclick="searchPost()">검색</button>
-    <div id="resultBox" class="infoBox"></div>
-
-    <div id="extraFields">
-      <h3>mainContents</h3>
-      <div id="mainContentsBox" class="infoBox"></div>
-
-      <h3>shadeContents</h3>
-      <div id="shadeContentsBox" class="infoBox"></div>
-    </div>
-
-    <div id="repliesSection">
-      <h3>Replies</h3>
-      <div id="repliesBox" class="infoBox"></div>
-    </div>
-  </div>
-
-  <div class="section" id="replySection">
-    <h3>Reply by reply id</h3>
-    <p>추후 구현 예정입니다.</p>
-  </div>
-
-  <div class="section" id="reportedPostsSection">
-    <h3>Reported Posts</h3>
-    <div id="reportedPostList" class="infoBox"></div>
-    <div id="reportedPostDetail" class="infoBox"></div>
-    <div id="originalPostMain" class="infoBox"></div>
-    <div id="originalPostShade" class="infoBox"></div>
-  </div>
+  <!-- 기존 코드 생략 -->
 
   <div class="section" id="reportedRepliesSection">
     <h3>Reported Replies</h3>
-    <p>추후 구현 예정입니다.</p>
+    <div id="reportedReplyList" class="infoBox"></div>
+    <div id="reportedReplyDetail" class="infoBox"></div>
+    <div id="originalPostMainReply" class="infoBox"></div>
+    <div id="originalPostShadeReply" class="infoBox"></div>
+    <div id="originalReplyMain" class="infoBox"></div>
+    <div id="originalReplyShade" class="infoBox"></div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
   <script>
-    let db;
+    // 기존 스크립트 생략...
 
-    function initializeFirebase() {
-      const apiKey = document.getElementById("apiKey").value.trim();
-      if (!apiKey) {
-        alert("apiKey를 입력해주세요.");
-        return;
-      }
-
-      const config = {
-        apiKey: apiKey,
-        authDomain: "texit-test.firebaseapp.com",
-        databaseURL: "https://texit-test-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "texit-test",
-        storageBucket: "texit-test.firebasestorage.app",
-        messagingSenderId: "869677715019",
-        appId: "1:869677715019:web:cb8020cb584ad8411c07ce",
-        measurementId: "G-2JX5J62THS"
-      };
-
-      try {
-        firebase.initializeApp(config);
-        db = firebase.firestore();
-        alert("Firebase 초기화 완료!");
-        document.getElementById("configSection").style.display = "none";
-        document.getElementById("mainMenu").style.display = "block";
-      } catch (error) {
-        alert("Firebase 초기화 실패: " + error.message);
-      }
-    }
-
-    function showSection(sectionId) {
-      const sections = ["postSection", "replySection", "reportedPostsSection", "reportedRepliesSection"];
-      sections.forEach(id => document.getElementById(id).style.display = "none");
-      document.getElementById(sectionId).style.display = "block";
-    }
-
-    async function searchPost() {
-      const input = document.getElementById("searchInput").value.trim();
-      const resultBox = document.getElementById("resultBox");
-      const extraSection = document.getElementById("extraFields");
-      const repliesSection = document.getElementById("repliesSection");
-      const mainBox = document.getElementById("mainContentsBox");
-      const shadeBox = document.getElementById("shadeContentsBox");
-      const repliesBox = document.getElementById("repliesBox");
-
-      if (!input) {
-        alert("문서 ID를 입력해주세요.");
-        return;
-      }
-
-      try {
-        const docRef = db.collection("posts").doc(input);
-        const doc = await docRef.get();
-
-        if (doc.exists) {
-          const data = doc.data();
-          resultBox.style.display = "block";
-          resultBox.innerText = `📄 문서 ID: ${doc.id}\n\n${JSON.stringify(data, null, 2)}`;
-
-          mainBox.innerText = data.mainContents || "(비어 있음)";
-          shadeBox.innerText = data.shadeContents || "(비어 있음)";
-          extraSection.style.display = "block";
-
-          const repliesSnapshot = await db.collection("replies")
-            .where("postId", "==", input)
-            .get();
-
-          let repliesText = "";
-          repliesSnapshot.forEach(doc => {
-            const reply = doc.data();
-            if (reply.mainContents) {
-              repliesText += `• ${reply.mainContents}\n`;
-            }
-          });
-
-          if (!repliesText) {
-            repliesText = "댓글이 없습니다.";
-          }
-
-          repliesBox.innerText = repliesText;
-          repliesSection.style.display = "block";
-
-        } else {
-          resultBox.style.display = "block";
-          resultBox.innerText = `❌ '${input}' 문서를 찾을 수 없습니다.`;
-          extraSection.style.display = "none";
-          repliesSection.style.display = "none";
-        }
-      } catch (error) {
-        resultBox.style.display = "block";
-        resultBox.innerText = `오류 발생: ${error.message}`;
-        extraSection.style.display = "none";
-        repliesSection.style.display = "none";
-      }
-    }
-
-    async function loadReportedPosts() {
-      const listBox = document.getElementById("reportedPostList");
-      const detailBox = document.getElementById("reportedPostDetail");
-      const mainBox = document.getElementById("originalPostMain");
-      const shadeBox = document.getElementById("originalPostShade");
+    async function loadReportedReplies() {
+      const listBox = document.getElementById("reportedReplyList");
+      const detailBox = document.getElementById("reportedReplyDetail");
+      const postMainBox = document.getElementById("originalPostMainReply");
+      const postShadeBox = document.getElementById("originalPostShadeReply");
+      const replyMainBox = document.getElementById("originalReplyMain");
+      const replyShadeBox = document.getElementById("originalReplyShade");
 
       listBox.innerHTML = "불러오는 중...";
-      detailBox.innerText = "";
-      mainBox.innerText = "";
-      shadeBox.innerText = "";
+      detailBox.innerText = postMainBox.innerText = postShadeBox.innerText = replyMainBox.innerText = replyShadeBox.innerText = "";
 
       try {
-        const snapshot = await db.collection("reported_posts").get();
+        const snapshot = await db.collection("reported_replies").get();
         if (snapshot.empty) {
-          listBox.innerText = "📭 신고된 게시물이 없습니다.";
+          listBox.innerText = "📭 신고된 댓글이 없습니다.";
           return;
         }
 
@@ -251,7 +110,7 @@
           const div = document.createElement("div");
           div.className = "clickable-id";
           div.innerText = doc.id;
-          div.onclick = () => loadReportedPostDetail(doc.id);
+          div.onclick = () => loadReportedReplyDetail(doc.id);
           listBox.appendChild(div);
         });
       } catch (e) {
@@ -259,42 +118,60 @@
       }
     }
 
-    async function loadReportedPostDetail(docId) {
-      const detailBox = document.getElementById("reportedPostDetail");
-      const mainBox = document.getElementById("originalPostMain");
-      const shadeBox = document.getElementById("originalPostShade");
-      detailBox.innerText = mainBox.innerText = shadeBox.innerText = "불러오는 중...";
+    async function loadReportedReplyDetail(docId) {
+      const detailBox = document.getElementById("reportedReplyDetail");
+      const postMainBox = document.getElementById("originalPostMainReply");
+      const postShadeBox = document.getElementById("originalPostShadeReply");
+      const replyMainBox = document.getElementById("originalReplyMain");
+      const replyShadeBox = document.getElementById("originalReplyShade");
+
+      detailBox.innerText = postMainBox.innerText = postShadeBox.innerText = replyMainBox.innerText = replyShadeBox.innerText = "불러오는 중...";
 
       try {
-        const doc = await db.collection("reported_posts").doc(docId).get();
-        if (!doc.exists) {
-          detailBox.innerText = "❌ 신고 문서를 찾을 수 없습니다.";
+        const reportedDoc = await db.collection("reported_replies").doc(docId).get();
+        if (!reportedDoc.exists) {
+          detailBox.innerText = "❌ 신고 댓글을 찾을 수 없습니다.";
           return;
         }
 
-        const data = doc.data();
-        detailBox.innerText = `📄 신고 문서 ID: ${doc.id}\n\n${JSON.stringify(data, null, 2)}`;
+        const reportedData = reportedDoc.data();
+        detailBox.innerText = `📄 신고 댓글 문서 ID: ${docId}\n\n${JSON.stringify(reportedData, null, 2)}`;
 
-        const postId = data.postId;
+        const replyId = reportedData.replyId;
+        if (!replyId) {
+          replyMainBox.innerText = "⚠️ replyId 필드가 없습니다.";
+          return;
+        }
+
+        const replyDoc = await db.collection("replies").doc(replyId).get();
+        if (!replyDoc.exists) {
+          replyMainBox.innerText = "❌ 해당 replyId로 댓글을 찾을 수 없습니다.";
+          return;
+        }
+
+        const replyData = replyDoc.data();
+        replyMainBox.innerText = `💬 reply mainContents: ${replyData.mainContents || "(없음)"}`;
+        replyShadeBox.innerText = `🌘 reply shadeContents: ${replyData.shadeContents || "(없음)"}`;
+
+        const postId = replyData.postId;
         if (!postId) {
-          mainBox.innerText = "⚠️ postId 필드가 없습니다.";
-          shadeBox.innerText = "";
+          postMainBox.innerText = "⚠️ 댓글에 postId가 없습니다.";
           return;
         }
 
         const postDoc = await db.collection("posts").doc(postId).get();
         if (!postDoc.exists) {
-          mainBox.innerText = "❌ 원본 게시글을 찾을 수 없습니다.";
-          shadeBox.innerText = "";
+          postMainBox.innerText = "❌ postId로 게시글을 찾을 수 없습니다.";
           return;
         }
 
         const postData = postDoc.data();
-        mainBox.innerText = `📌 mainContents: ${postData.mainContents || "(없음)"}`;
-        shadeBox.innerText = `🌑 shadeContents: ${postData.shadeContents || "(없음)"}`;
+        postMainBox.innerText = `📝 post mainContents: ${postData.mainContents || "(없음)"}`;
+        postShadeBox.innerText = `🌑 post shadeContents: ${postData.shadeContents || "(없음)"}`;
+
       } catch (e) {
         detailBox.innerText = `❌ 오류: ${e.message}`;
-        mainBox.innerText = shadeBox.innerText = "";
+        postMainBox.innerText = postShadeBox.innerText = replyMainBox.innerText = replyShadeBox.innerText = "";
       }
     }
   </script>
